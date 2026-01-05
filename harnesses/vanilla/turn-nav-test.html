@@ -1,0 +1,354 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Turn Navigation Responsive Test</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { 
+        font-family: ui-sans-serif, system-ui; 
+        margin: 0; 
+        padding: 24px; 
+        background: #f3f4f6;
+      }
+      h1 { margin: 0 0 16px 0; font-size: 1.5rem; }
+      
+      .test-controls {
+        background: #1e293b;
+        color: white;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 24px;
+      }
+      .test-controls h2 { margin: 0 0 12px 0; font-size: 1rem; font-weight: 600; }
+      
+      .control-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .control-row:last-child { margin-bottom: 0; }
+      
+      .control-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .control-group label {
+        font-size: 0.875rem;
+        color: #94a3b8;
+      }
+      
+      .width-slider {
+        width: 200px;
+        accent-color: #3b82f6;
+      }
+      
+      .width-display {
+        font-family: monospace;
+        background: #334155;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        min-width: 80px;
+        text-align: center;
+      }
+      
+      .preset-btn {
+        padding: 6px 12px;
+        background: #475569;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        cursor: pointer;
+        font-size: 0.75rem;
+        transition: background 0.15s;
+      }
+      .preset-btn:hover { background: #64748b; }
+      .preset-btn.active { background: #3b82f6; }
+      
+      .toggle-btn {
+        padding: 6px 12px;
+        background: #475569;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        cursor: pointer;
+        font-size: 0.75rem;
+        transition: background 0.15s;
+      }
+      .toggle-btn:hover { background: #64748b; }
+      .toggle-btn.on { background: #22c55e; }
+      
+      .status-bar {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        padding-top: 8px;
+        border-top: 1px solid #334155;
+        margin-top: 12px;
+      }
+      
+      /* Resizable container */
+      .chat-container {
+        background: white;
+        border: 3px dashed #3b82f6;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 0 auto;
+        transition: width 0.2s ease;
+        position: relative;
+      }
+      
+      .container-label {
+        position: absolute;
+        top: -10px;
+        left: 16px;
+        background: #3b82f6;
+        color: white;
+        font-size: 0.75rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+      
+      /* Breakpoint indicators */
+      .breakpoints {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+        justify-content: center;
+      }
+      .breakpoint {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: #e2e8f0;
+        color: #64748b;
+      }
+      .breakpoint.active {
+        background: #3b82f6;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Turn Navigation Responsive Test</h1>
+    
+    <div class="test-controls">
+      <h2>Container Width Controls</h2>
+      
+      <div class="control-row">
+        <div class="control-group">
+          <label>Width:</label>
+          <input type="range" class="width-slider" id="widthSlider" min="280" max="1200" value="600">
+          <span class="width-display" id="widthDisplay">600px</span>
+        </div>
+      </div>
+      
+      <div class="control-row">
+        <label style="font-size: 0.875rem; color: #94a3b8;">Presets:</label>
+        <button class="preset-btn" onclick="setWidth(320)">Mobile (320px)</button>
+        <button class="preset-btn" onclick="setWidth(375)">iPhone (375px)</button>
+        <button class="preset-btn" onclick="setWidth(480)">Small (480px)</button>
+        <button class="preset-btn" onclick="setWidth(640)">SM Breakpoint (640px)</button>
+        <button class="preset-btn" onclick="setWidth(768)">MD Breakpoint (768px)</button>
+        <button class="preset-btn" onclick="setWidth(1024)">LG (1024px)</button>
+        <button class="preset-btn" onclick="setWidth(1200)">Full (1200px)</button>
+      </div>
+      
+      <div class="control-row">
+        <label style="font-size: 0.875rem; color: #94a3b8;">Options:</label>
+        <button class="toggle-btn" id="turnNavToggle" onclick="toggleTurnNav()">Turn Nav: ON</button>
+        <button class="toggle-btn" id="displayModeToggle" onclick="toggleDisplayMode()">Mode: last-turn</button>
+        <button class="toggle-btn" id="collapsibleToggle" onclick="toggleCollapsible()">Collapsible: OFF</button>
+        <button class="toggle-btn" id="commandModeToggle" onclick="toggleCommandMode()">Command Mode: OFF</button>
+      </div>
+      
+      <div class="control-row">
+        <label style="font-size: 0.875rem; color: #94a3b8;">Actions:</label>
+        <button class="preset-btn" onclick="clearConversation()">Clear Conversation</button>
+        <span style="font-size: 0.75rem; color: #64748b;">Send 2+ messages to see turn navigation</span>
+      </div>
+      
+      <div class="status-bar" id="status">
+        Loading...
+      </div>
+    </div>
+    
+    <div class="chat-container" id="chatContainer" style="width: 600px;">
+      <span class="container-label" id="containerLabel">600px</span>
+      <guideants-chat></guideants-chat>
+    </div>
+    
+    <div class="breakpoints">
+      <span class="breakpoint" id="bp-xs">&lt;640px (xs)</span>
+      <span class="breakpoint" id="bp-sm">≥640px (sm)</span>
+      <span class="breakpoint" id="bp-md">≥768px (md)</span>
+      <span class="breakpoint" id="bp-lg">≥1024px (lg)</span>
+    </div>
+
+    <script src="../../client/dist/guideants-chat.iife.js"></script>
+    <script>
+      const el = document.querySelector('guideants-chat');
+      const container = document.getElementById('chatContainer');
+      const containerLabel = document.getElementById('containerLabel');
+      const widthSlider = document.getElementById('widthSlider');
+      const widthDisplay = document.getElementById('widthDisplay');
+      const statusEl = document.getElementById('status');
+      
+      // Auth service (matches index.html)
+      const authService = {
+        async getToken() {
+          return 'demo-valid-token';
+        }
+      };
+      
+      // Width control
+      function setWidth(width) {
+        container.style.width = width + 'px';
+        containerLabel.textContent = width + 'px';
+        widthSlider.value = width;
+        widthDisplay.textContent = width + 'px';
+        updateBreakpointIndicators(width);
+        updatePresetButtons(width);
+      }
+      
+      function updateBreakpointIndicators(width) {
+        document.getElementById('bp-xs').classList.toggle('active', width < 640);
+        document.getElementById('bp-sm').classList.toggle('active', width >= 640 && width < 768);
+        document.getElementById('bp-md').classList.toggle('active', width >= 768 && width < 1024);
+        document.getElementById('bp-lg').classList.toggle('active', width >= 1024);
+      }
+      
+      function updatePresetButtons(width) {
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+          btn.classList.remove('active');
+        });
+      }
+      
+      widthSlider.addEventListener('input', (e) => {
+        setWidth(parseInt(e.target.value));
+      });
+      
+      // Toggle controls
+      function toggleTurnNav() {
+        const current = el.getTurnNavigationEnabled();
+        el.setTurnNavigationEnabled(!current);
+        updateToggleButton('turnNavToggle', 'Turn Nav', !current);
+        updateStatus();
+      }
+      
+      function toggleDisplayMode() {
+        const current = el.getDisplayMode();
+        const newMode = current === 'full' ? 'last-turn' : 'full';
+        el.setDisplayMode(newMode);
+        updateToggleButton('displayModeToggle', 'Mode', newMode === 'last-turn', newMode);
+        updateStatus();
+      }
+      
+      function toggleCollapsible() {
+        const current = el.getCollapsible();
+        el.setCollapsible(!current);
+        updateToggleButton('collapsibleToggle', 'Collapsible', !current);
+        updateStatus();
+      }
+      
+      function toggleCommandMode() {
+        const current = el.getCommandMode();
+        el.setCommandMode(!current);
+        updateToggleButton('commandModeToggle', 'Command Mode', !current);
+        updateStatus();
+      }
+      
+      function updateToggleButton(id, label, isOn, customValue) {
+        const btn = document.getElementById(id);
+        const value = customValue !== undefined ? customValue : (isOn ? 'ON' : 'OFF');
+        btn.textContent = `${label}: ${value}`;
+        btn.classList.toggle('on', isOn);
+      }
+      
+      function clearConversation() {
+        el.clearConversation();
+        updateStatus();
+      }
+      
+      function updateStatus() {
+        const mode = el.getDisplayMode();
+        const navEnabled = el.getTurnNavigationEnabled();
+        const collapsible = el.getCollapsible();
+        const turnCount = el.getTurnCount();
+        const currentTurn = el.getCurrentTurnIndex();
+        const commandMode = el.getCommandMode();
+        
+        statusEl.textContent =
+          `Turns: ${turnCount}` +
+          ` | Current: ${currentTurn || 'N/A'}` +
+          ` | Mode: ${mode}` +
+          ` | Nav: ${navEnabled ? 'ON' : 'OFF'}` +
+          ` | Collapsible: ${collapsible ? 'ON' : 'OFF'}` +
+          ` | Command: ${commandMode ? 'ON' : 'OFF'}`;
+      }
+      
+      // Initialize
+      async function init() {
+        // Connect to real API (matches index.html config)
+        el.setApiBaseUrl('http://localhost:5106');
+        el.setPubId('d4a1d138-e283-4cfc-9418-f389375143b9');
+        
+        const token = await authService.getToken();
+        el.setAuthToken(token);
+        
+        el.setDisplayMode('last-turn');
+        el.setTurnNavigationEnabled(true);
+        el.setCollapsible(false);
+        el.setCommandMode(false);
+        
+        // Update toggle button states
+        updateToggleButton('turnNavToggle', 'Turn Nav', true);
+        updateToggleButton('displayModeToggle', 'Mode', true, 'last-turn');
+        updateToggleButton('collapsibleToggle', 'Collapsible', false);
+        updateToggleButton('commandModeToggle', 'Command Mode', false);
+        
+        // Test authentication
+        try {
+          const cfg = await el.testAuthentication();
+          console.log('[test] Published guide config:', cfg);
+        } catch (err) {
+          console.error('[test] Authentication failed:', err);
+        }
+        
+        // Set initial width
+        setWidth(600);
+        updateBreakpointIndicators(600);
+        
+        updateStatus();
+      }
+      
+      // Listen to events
+      el.addEventListener('wf-turn-navigation', (e) => {
+        console.log('[test] Turn navigation:', e.detail);
+        updateStatus();
+      });
+      
+      el.addEventListener('wf-complete', (e) => {
+        console.log('[test] Complete:', e.detail);
+        updateStatus();
+      });
+      
+      el.addEventListener('wf-error', (e) => {
+        console.error('[test] Error:', e.detail);
+      });
+      
+      el.addEventListener('wf-auth-error', async (e) => {
+        console.warn('[test] Auth error:', e.detail);
+        const newToken = await authService.getToken();
+        el.setAuthToken(newToken);
+      });
+      
+      init();
+    </script>
+  </body>
+</html>
+

@@ -1,0 +1,15 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "Microsoft.AspNetCore": "Information"
+    }
+  },
+  "Guideants": {
+    "ApiKey": "your-api-key-here",
+    "TargetUrl": "https://api.guideants.ai"
+  }
+}
+
+
+

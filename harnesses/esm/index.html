@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ESM Harness - guideants-chat</title>
+    <style>
+      body { font-family: ui-sans-serif, system-ui; margin: 24px; }
+    </style>
+    <script type="module">
+      // Import the ES module build; it registers the custom element
+      import '../../client/dist/guideants-chat.es.js';
+    </script>
+  </head>
+  <body>
+    <h1>ESM Harness</h1>
+
+    <h2>Standard Mode</h2>
+    <guideants-chat 
+      id="standard"
+      api-base-url="http://localhost:5106" 
+      pub-id="11111111-1111-1111-1111-111111111111">
+    </guideants-chat>
+
+    <h2>Last Turn Mode with Navigation</h2>
+    <guideants-chat 
+      id="last-turn"
+      api-base-url="http://localhost:5106" 
+      pub-id="11111111-1111-1111-1111-111111111111"
+      display-mode="last-turn"
+      enable-turn-navigation>
+    </guideants-chat>
+
+    <h2>Collapsible Mode</h2>
+    <guideants-chat 
+      id="collapsible"
+      api-base-url="http://localhost:5106" 
+      pub-id="11111111-1111-1111-1111-111111111111"
+      collapsible>
+    </guideants-chat>
+
+    <h2>All Features Combined</h2>
+    <guideants-chat 
+      id="all-features"
+      api-base-url="http://localhost:5106" 
+      pub-id="11111111-1111-1111-1111-111111111111"
+      display-mode="last-turn"
+      enable-turn-navigation
+      collapsible>
+    </guideants-chat>
+
+    <script type="module">
+      // Setup event listeners for all instances
+      document.querySelectorAll('guideants-chat').forEach(el => {
+        el.addEventListener('wf-complete', (e) => {
+          console.log(`[${el.id}] Complete:`, e.detail);
+        });
+        el.addEventListener('wf-error', (e) => {
+          console.error(`[${el.id}] Error:`, e.detail);
+        });
+        el.addEventListener('wf-turns-hidden', (e) => {
+          console.log(`[${el.id}] Turns hidden:`, e.detail);
+        });
+        el.addEventListener('wf-turn-navigation', (e) => {
+          console.log(`[${el.id}] Turn navigation:`, e.detail);
+        });
+        el.addEventListener('wf-collapsed', () => {
+          console.log(`[${el.id}] Collapsed`);
+        });
+        el.addEventListener('wf-expanded', () => {
+          console.log(`[${el.id}] Expanded`);
+        });
+      });
+
+      // Example: Programmatic control
+      const lastTurnChat = document.getElementById('last-turn');
+      if (lastTurnChat) {
+        // You can control it programmatically:
+        // lastTurnChat.goToTurn(1);
+        // lastTurnChat.goToNextTurn();
+        // lastTurnChat.goToPreviousTurn();
+      }
+
+      const collapsibleChat = document.getElementById('collapsible');
+      if (collapsibleChat) {
+        // You can control collapse state programmatically:
+        // collapsibleChat.collapse();
+        // collapsibleChat.expand();
+        // collapsibleChat.toggleCollapse();
+      }
+    </script>
+  </body>
+  </html>
+
+
+
+
+

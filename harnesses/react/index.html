@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>React Harness - guideants-chat</title>
+    <style>
+      body { font-family: ui-sans-serif, system-ui; margin: 24px; }
+    </style>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  </head>
+  <body>
+    <h1>React Harness</h1>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/guideants@0.1.0/dist/guideants-chat.iife.js"></script>
+    <script type="text/javascript">
+      const { useEffect, useRef } = React;
+
+      // Simple local auth service mirroring the vanilla harness.
+      const authService = {
+        async getToken() {
+          // Must match VALID_TOKEN in webhook-server.js
+          return 'demo-valid-token';
+        },
+        async refreshToken() {
+          return 'demo-valid-token';
+        }
+      };
+
+      function App() {
+        const ref = useRef(null);
+        useEffect(() => {
+          const el = ref.current;
+          if (!el) return;
+
+          async function init() {
+            // Configure via the web component's public API
+            el.setApiBaseUrl('https://api.guideants.ai');
+            el.setPubId('5525abaa-bda8-456e-9441-e9ec06d3d078');
+
+            const token = await authService.getToken();
+            el.setAuthToken(token);
+
+            try {
+              const cfg = await el.testAuthentication();
+              console.log('[react harness] Published guide config:', cfg);
+            } catch (err) {
+              console.error('[react harness] Authentication/config test failed:', err);
+            }
+          }
+
+          const onComplete = (e) => console.log('[react harness] Complete:', e.detail);
+          const onError = (e) => console.error('[react harness] Error:', e.detail);
+          const onAuthError = async (e) => {
+            console.warn('[react harness] Auth error from component:', e.detail);
+            const newToken = await authService.refreshToken();
+            el.setAuthToken(newToken);
+          };
+
+          el.addEventListener('wf-complete', onComplete);
+          el.addEventListener('wf-error', onError);
+          el.addEventListener('wf-auth-error', onAuthError);
+
+          init();
+
+          return () => {
+            el.removeEventListener('wf-complete', onComplete);
+            el.removeEventListener('wf-error', onError);
+            el.removeEventListener('wf-auth-error', onAuthError);
+          };
+        }, []);
+        // No attributes – all configuration goes through the programmatic API
+        return React.createElement('guideants-chat', { ref });
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(React.createElement(App));
+    </script>
+  </body>
+  </html>
+
+

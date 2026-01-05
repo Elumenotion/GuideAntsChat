@@ -1,0 +1,274 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Theme Demo - guideants-chat</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: ui-sans-serif, system-ui;
+        margin: 0;
+        padding: 24px;
+        background: #f9fafb;
+      }
+
+      .header {
+        max-width: 1200px;
+        margin: 0 auto 32px;
+      }
+
+      h1 {
+        margin: 0 0 16px;
+        font-size: 32px;
+        font-weight: 700;
+      }
+
+      .theme-selector {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 24px;
+      }
+
+      .theme-button {
+        padding: 12px 24px;
+        border: 2px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+
+      .theme-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .theme-button.active {
+        border-color: #3b82f6;
+        background: #eff6ff;
+      }
+
+      .theme-button.default.active { border-color: #3b82f6; }
+      .theme-button.dark.active { border-color: #1f2937; background: #374151; color: white; }
+      .theme-button.playful.active { border-color: #ec4899; background: #fce7f3; }
+
+      .description {
+        padding: 16px;
+        background: white;
+        border-radius: 8px;
+        border-left: 4px solid #3b82f6;
+        margin-bottom: 24px;
+      }
+
+      .chat-container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      /* Theme: Default (Blue) */
+      guideants-chat.theme-default {
+        --wf-primary-color: #3b82f6;
+        --wf-primary-hover: #2563eb;
+        --wf-danger-color: #dc2626;
+        --wf-danger-hover: #b91c1c;
+        --wf-border-color: #e5e7eb;
+        --wf-bg-user: #dbeafe;
+        --wf-bg-assistant: #f3f4f6;
+        --wf-bg-control-bar: #f3f4f6;
+        --wf-bg-container: #ffffff;
+        --wf-text-primary: #111827;
+        --wf-text-secondary: #6b7280;
+        --wf-border-radius: 0.375rem;
+        --wf-border-radius-lg: 0.5rem;
+      }
+
+      /* Theme: Dark Mode */
+      guideants-chat.theme-dark {
+        --wf-primary-color: #60a5fa;
+        --wf-primary-hover: #3b82f6;
+        --wf-danger-color: #f87171;
+        --wf-danger-hover: #ef4444;
+        --wf-border-color: #374151;
+        --wf-bg-user: #1e3a5f;
+        --wf-bg-assistant: #374151;
+        --wf-bg-control-bar: #1f2937;
+        --wf-bg-container: #111827;
+        --wf-text-primary: #f3f4f6;
+        --wf-text-secondary: #9ca3af;
+        --wf-text-error: #f87171;
+        --wf-border-radius: 0.375rem;
+        --wf-border-radius-lg: 0.5rem;
+      }
+
+      /* Theme: Playful (Pink/Purple) */
+      guideants-chat.theme-playful {
+        --wf-primary-color: #ec4899;
+        --wf-primary-hover: #db2777;
+        --wf-danger-color: #f97316;
+        --wf-danger-hover: #ea580c;
+        --wf-border-color: #fce7f3;
+        --wf-bg-user: #fce7f3;
+        --wf-bg-assistant: #faf5ff;
+        --wf-bg-control-bar: #fdf4ff;
+        --wf-bg-container: #ffffff;
+        --wf-text-primary: #831843;
+        --wf-text-secondary: #9333ea;
+        --wf-border-radius: 16px;
+        --wf-border-radius-lg: 20px;
+        --wf-font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive;
+      }
+
+      .info-box {
+        margin-top: 24px;
+        padding: 16px;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+      }
+
+      .info-box h3 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+
+      .info-box pre {
+        background: #f9fafb;
+        padding: 12px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>🎨 Theme Demo - Guideants Chat</h1>
+      
+      <div class="description">
+        <strong>Try the themes below!</strong> This demo shows how easy it is to customize the chat component using CSS custom properties. Click a theme button to switch styles instantly.
+      </div>
+
+      <div class="theme-selector">
+        <button class="theme-button default active" onclick="setTheme('default')">
+          ☀️ Default (Blue)
+        </button>
+        <button class="theme-button dark" onclick="setTheme('dark')">
+          🌙 Dark Mode
+        </button>
+        <button class="theme-button playful" onclick="setTheme('playful')">
+          🎪 Playful (Pink)
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-container">
+      <guideants-chat class="theme-default"></guideants-chat>
+    </div>
+
+    <div class="info-box">
+      <h3>Current Theme CSS</h3>
+      <pre id="theme-css">Loading...</pre>
+    </div>
+
+    <script src="../../client/dist/guideants-chat.iife.js"></script>
+    <script>
+      const chatEl = document.querySelector('guideants-chat');
+      const themeCssEl = document.getElementById('theme-css');
+
+      const themes = {
+        default: `/* Default Theme (Blue) */
+guideants-chat {
+  --wf-primary-color: #3b82f6;
+  --wf-primary-hover: #2563eb;
+  --wf-danger-color: #dc2626;
+  --wf-border-color: #e5e7eb;
+  --wf-bg-user: #dbeafe;
+  --wf-bg-assistant: #f3f4f6;
+  --wf-bg-container: #ffffff;
+  --wf-text-primary: #111827;
+  --wf-border-radius: 0.375rem;
+}`,
+        dark: `/* Dark Mode Theme */
+guideants-chat {
+  --wf-primary-color: #60a5fa;
+  --wf-primary-hover: #3b82f6;
+  --wf-danger-color: #f87171;
+  --wf-border-color: #374151;
+  --wf-bg-user: #1e3a5f;
+  --wf-bg-assistant: #374151;
+  --wf-bg-control-bar: #1f2937;
+  --wf-bg-container: #111827;
+  --wf-text-primary: #f3f4f6;
+  --wf-text-secondary: #9ca3af;
+}`,
+        playful: `/* Playful Theme (Pink/Purple) */
+guideants-chat {
+  --wf-primary-color: #ec4899;
+  --wf-primary-hover: #db2777;
+  --wf-danger-color: #f97316;
+  --wf-border-color: #fce7f3;
+  --wf-bg-user: #fce7f3;
+  --wf-bg-assistant: #faf5ff;
+  --wf-bg-control-bar: #fdf4ff;
+  --wf-text-primary: #831843;
+  --wf-text-secondary: #9333ea;
+  --wf-border-radius: 16px;
+  --wf-font-family: 'Comic Sans MS', cursive;
+}`
+      };
+
+      function setTheme(themeName) {
+        // Remove all theme classes
+        chatEl.classList.remove('theme-default', 'theme-dark', 'theme-playful');
+        
+        // Add new theme class
+        chatEl.classList.add(`theme-${themeName}`);
+        
+        // Update button states
+        document.querySelectorAll('.theme-button').forEach(btn => {
+          btn.classList.remove('active');
+        });
+        document.querySelector(`.theme-button.${themeName}`).classList.add('active');
+        
+        // Update CSS display
+        themeCssEl.textContent = themes[themeName];
+        
+        // Store preference
+        localStorage.setItem('preferred-theme', themeName);
+      }
+
+      // Initialize component
+      async function init() {
+        chatEl.setApiBaseUrl('http://localhost:5106');
+        chatEl.setPubId('93b331e4-63f0-43ff-a368-3c8ab49f0a7b');
+        chatEl.setCollapsible(true);
+
+        const token = 'demo-valid-token';
+        chatEl.setAuthToken(token);
+
+        try {
+          await chatEl.testAuthentication();
+          console.log('[themes] Component initialized');
+        } catch (err) {
+          console.error('[themes] Init failed:', err);
+        }
+
+        // Load saved theme preference
+        const savedTheme = localStorage.getItem('preferred-theme') || 'default';
+        setTheme(savedTheme);
+      }
+
+      init();
+    </script>
+  </body>
+</html>
+
+
+

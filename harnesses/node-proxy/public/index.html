@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GuideAnts Proxy Test (Node.js)</title>
+  <script src="/guideants-chat.iife.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+    }
+    
+    .config-section {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .config-section h2 {
+      margin-top: 0;
+      color: #444;
+      font-size: 1.1rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #555;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background: #2563eb;
+    }
+    
+    button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+    
+    .chat-container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    guideants-chat {
+      display: block;
+      width: 100%;
+      height: 500px;
+    }
+    
+    .status {
+      padding: 0.5rem 1rem;
+      background: #f0fdf4;
+      border-left: 3px solid #22c55e;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    
+    .status.error {
+      background: #fef2f2;
+      border-left-color: #ef4444;
+    }
+    
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>🐜 GuideAnts Node.js Proxy Harness</h1>
+  <p class="subtitle">Test the GuideAnts chat component through a local proxy server</p>
+
+  <div class="config-section">
+    <h2>Configuration</h2>
+    <div class="form-group">
+      <label for="pubId">Published Guide ID</label>
+      <input type="text" id="pubId" placeholder="Enter your pub-id (GUID)">
+    </div>
+    <div class="form-group">
+      <label for="proxyUrl">Proxy URL</label>
+      <input type="text" id="proxyUrl" value="http://localhost:3001/api/guideants" readonly>
+    </div>
+    <button id="initBtn">Initialize Chat</button>
+  </div>
+
+  <div id="statusMessage" class="status hidden"></div>
+
+  <div class="chat-container">
+    <guideants-chat id="chat"></guideants-chat>
+  </div>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const pubIdInput = document.getElementById('pubId');
+    const proxyUrlInput = document.getElementById('proxyUrl');
+    const initBtn = document.getElementById('initBtn');
+    const statusMessage = document.getElementById('statusMessage');
+
+    function showStatus(message, isError = false) {
+      statusMessage.textContent = message;
+      statusMessage.classList.remove('hidden', 'error');
+      if (isError) {
+        statusMessage.classList.add('error');
+      }
+    }
+
+    function hideStatus() {
+      statusMessage.classList.add('hidden');
+    }
+
+    initBtn.addEventListener('click', () => {
+      const pubId = pubIdInput.value.trim();
+      const proxyUrl = proxyUrlInput.value.trim();
+
+      if (!pubId) {
+        showStatus('Please enter a Published Guide ID', true);
+        return;
+      }
+
+      hideStatus();
+      
+      // Configure the chat component to use the proxy
+      chat.setProxyUrl(proxyUrl);
+      chat.setPubId(pubId);
+
+      showStatus('Chat initialized! The component is now connecting through the proxy.');
+      
+      // Add event listeners for debugging
+      chat.addEventListener('wf-stream-start', () => {
+        console.log('[Event] Stream started');
+      });
+
+      chat.addEventListener('wf-complete', () => {
+        console.log('[Event] Stream complete');
+      });
+
+      chat.addEventListener('wf-error', (e) => {
+        console.error('[Event] Error:', e.detail);
+        showStatus(`Error: ${e.detail?.message || 'Unknown error'}`, true);
+      });
+
+      chat.addEventListener('wf-auth-error', (e) => {
+        console.error('[Event] Auth error:', e.detail);
+        showStatus(`Authentication error: ${e.detail?.message || 'Unknown auth error'}`, true);
+      });
+    });
+
+    // Pre-populate from URL params if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const pubIdParam = urlParams.get('pubId');
+    if (pubIdParam) {
+      pubIdInput.value = pubIdParam;
+    }
+  </script>
+</body>
+</html>
+

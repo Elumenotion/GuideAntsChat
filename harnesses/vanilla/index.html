@@ -1,0 +1,273 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vanilla Harness - guideants-chat</title>
+    <style>
+      body { font-family: ui-sans-serif, system-ui; margin: 24px; }
+      .container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+      .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 20px; }
+      .controls h2 { flex: 1 0 100%; margin: 0 0 8px 0; }
+      .controls button { padding: 6px 10px; }
+      .controls #status { flex: 1 0 100%; margin-top: 8px; color: #666; }
+      .demo { max-width: 1200px; margin: 30px auto; padding: 20px; background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 8px; }
+      @media (min-width: 1400px) {
+        .container, .demo { max-width: 1400px; }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Vanilla Harness - Programmatic API Demo</h1>
+    
+    <div class="controls">
+      <h2>Controls</h2>
+      <button onclick="toggleDisplayMode()">Toggle Display Mode</button>
+      <button onclick="toggleNavigation()">Toggle Navigation</button>
+      <button onclick="toggleCollapsible()">Toggle Collapsible</button>
+      <button onclick="toggleCollapse()">Collapse/Expand</button>
+      <button onclick="prevTurn()">Previous Turn</button>
+      <button onclick="nextTurn()">Next Turn</button>
+      <button onclick="toggleConversationStarters()">Toggle Conversation Starters</button>
+      <button onclick="toggleAttachments()">Toggle Attachments</button>
+      <button onclick="toggleCommandMode()">Toggle Command Mode</button>
+      <button onclick="toggleMic()">Toggle Mic</button>
+      <button onclick="toggleCamera()">Toggle Camera</button>
+      <p id="status"></p>
+    </div>
+
+    <!-- Minimal markup; all configuration is done via the programmatic API -->
+    <div class="container">
+      <guideants-chat></guideants-chat>
+    </div>
+
+    <!-- Demo content to show floating behavior -->
+    <div class="demo">
+      <h2 style="margin-top: 0; color: #1e40af;">Page Content Below Chat</h2>
+      <p style="color: #1e3a8a;">
+        <strong>When Collapsible is ON:</strong> The chat floats above this content (like a dropdown). 
+        The conversation overlays the page without pushing content down. A control bar with a collapse toggle appears.
+      </p>
+      <p style="color: #1e3a8a;">
+        <strong>When Collapsible is OFF:</strong> The chat is part of normal page flow. 
+        The conversation pushes this content down when expanded. No control bar appears unless turn navigation is enabled.
+      </p>
+      <p style="color: #1e3a8a; background: #fef3c7; padding: 8px; border-radius: 4px; border-left: 4px solid #f59e0b;">
+        <strong>Try it:</strong> Click "Toggle Collapsible" above and watch how this content behaves differently!
+      </p>
+      <ul style="color: #1e3a8a;">
+        <li><strong>Send a message</strong> to see the chat expand</li>
+        <li><strong>Toggle Collapsible</strong> to switch between floating and normal modes</li>
+        <li><strong>Notice the control bar</strong> only appears when it has content (collapse toggle or turn navigation)</li>
+        <li><strong>Toggle Navigation</strong> to show/hide turn controls in last-turn mode</li>
+        <li>Collapsible mode adds a shadow to indicate floating</li>
+      </ul>
+      <div style="height: 400px; background: linear-gradient(to bottom, #dbeafe, #bfdbfe); border-radius: 4px; display: flex; align-items: center; justify-content: center; margin-top: 20px;">
+        <p style="font-size: 24px; color: #1e40af; font-weight: bold;">More Page Content</p>
+      </div>
+    </div>
+
+    <script src="../../client/dist/guideants-chat.iife.js"></script>
+    <script>
+      const el = document.querySelector('guideants-chat');
+      const statusEl = document.getElementById('status');
+      let pendingAttachments = [];
+
+      function updateStatus() {
+        const mode = el.getDisplayMode();
+        const navEnabled = el.getTurnNavigationEnabled();
+        const collapsible = el.getCollapsible();
+        const collapsed = el.getIsCollapsed();
+        const turnCount = el.getTurnCount();
+        const currentTurn = el.getCurrentTurnIndex();
+        const startersEnabled = el.getConversationStartersEnabled?.() ?? false;
+        const attachmentsEnabled = el.getAttachmentsEnabled?.() ?? false;
+        const commandMode = el.getCommandMode?.() ?? false;
+        const micEnabled = el.getSpeechToTextEnabled?.() ?? false;
+        const cameraEnabled = el.getCameraEnabled?.() ?? false;
+        
+        statusEl.textContent =
+          `Mode: ${mode}` +
+          ` | Navigation: ${navEnabled ? 'ON' : 'OFF'}` +
+          ` | Collapsible: ${collapsible ? 'ON' : 'OFF'}` +
+          ` | State: ${collapsed ? 'Collapsed' : 'Expanded'}` +
+          ` | Turns: ${turnCount}` +
+          ` | Current: ${currentTurn || 'N/A'}` +
+          ` | Starters: ${startersEnabled ? 'ON' : 'OFF'}` +
+          ` | Attachments: ${attachmentsEnabled ? 'ON' : 'OFF'}` +
+          ` | Command: ${commandMode ? 'ON' : 'OFF'}` +
+          ` | Mic: ${micEnabled ? 'ON' : 'OFF'}` +
+          ` | Camera: ${cameraEnabled ? 'ON' : 'OFF'}`;
+      }
+
+      function toggleDisplayMode() {
+        const current = el.getDisplayMode();
+        el.setDisplayMode(current === 'full' ? 'last-turn' : 'full');
+        updateStatus();
+      }
+
+      function toggleNavigation() {
+        const current = el.getTurnNavigationEnabled();
+        el.setTurnNavigationEnabled(!current);
+        updateStatus();
+      }
+
+      function toggleCollapsible() {
+        const current = el.getCollapsible();
+        el.setCollapsible(!current);
+        updateStatus();
+      }
+
+      function toggleCollapse() {
+        el.toggleCollapse();
+        updateStatus();
+      }
+
+      function prevTurn() {
+        el.goToPreviousTurn();
+        updateStatus();
+      }
+
+      function nextTurn() {
+        el.goToNextTurn();
+        updateStatus();
+      }
+
+      function detectUploadType(file) {
+        if (file.type.startsWith('image/')) return 'ImageFile';
+        if (file.type.startsWith('audio/')) return 'AudioFile';
+        if (file.type === 'text/plain' || file.type === 'application/pdf') return 'TextFile';
+        return 'SandboxFile';
+      }
+
+      async function uploadFileToNotebook(file) {
+        // Harness stub — replace with your notebook file upload endpoint.
+        const fakeId = crypto.randomUUID();
+        const uploadType = detectUploadType(file);
+        console.log('[harness] Simulated upload', file.name, '→', fakeId, uploadType);
+        return { notebookFileId: fakeId, uploadType };
+      }
+
+      function toggleConversationStarters() {
+        const enabled = el.getConversationStartersEnabled?.() ?? false;
+        el.setConversationStartersEnabled(!enabled);
+        updateStatus();
+      }
+
+      function toggleAttachments() {
+        const enabled = el.getAttachmentsEnabled?.() ?? false;
+        el.setAttachmentsEnabled(!enabled);
+        updateStatus();
+      }
+
+      function toggleCommandMode() {
+        const enabled = el.getCommandMode?.() ?? false;
+        el.setCommandMode(!enabled);
+        updateStatus();
+      }
+
+      function toggleMic() {
+        const enabled = el.getSpeechToTextEnabled?.() ?? false;
+        el.setSpeechToTextEnabled(!enabled);
+        updateStatus();
+      }
+
+      function toggleCamera() {
+        const enabled = el.getCameraEnabled?.() ?? false;
+        el.setCameraEnabled(!enabled);
+        updateStatus();
+      }
+
+      // Simple local "auth service" for the harness – this is where a real app
+      // would plug in its own token acquisition / refresh logic.
+      const authService = {
+        async getToken() {
+          // Matches the default VALID_TOKEN in webhook-server.js
+          return 'demo-valid-token';
+        },
+        async refreshToken() {
+          // For the harness we just return the same demo token again
+          return 'demo-valid-token';
+        }
+      };
+
+      async function init() {
+        // Configure the component entirely via its public API
+        el.setApiBaseUrl('http://localhost:5106');
+        el.setPubId('93b331e4-63f0-43ff-a368-3c8ab49f0a7b');
+
+        // Start with collapsible ON for demo (so floating behavior is visible)
+        // el.setDisplayMode('full');
+        // el.setTurnNavigationEnabled(false);
+        // el.setCollapsible(true);
+
+        const token = await authService.getToken();
+        el.setAuthToken(token);
+
+        // Exercise the config/auth path explicitly
+        try {
+          const cfg = await el.testAuthentication();
+          console.log('[harness] Published guide config:', cfg);
+        } catch (err) {
+          console.error('[harness] Authentication/config test failed:', err);
+        }
+
+        updateStatus();
+      }
+
+      // Core lifecycle / telemetry events
+      el.addEventListener('wf-complete', (e) => {
+        console.log('[harness] Complete:', e.detail);
+        updateStatus();
+      });
+
+      el.addEventListener('wf-error', (e) => {
+        console.error('[harness] Error:', e.detail);
+      });
+
+      // New feature events
+      el.addEventListener('wf-turns-hidden', (e) => {
+        console.log('[harness] Turns hidden:', e.detail);
+      });
+
+      el.addEventListener('wf-turn-navigation', (e) => {
+        console.log('[harness] Turn navigation:', e.detail);
+        updateStatus();
+      });
+
+      el.addEventListener('wf-collapsed', () => {
+        console.log('[harness] Collapsed');
+        updateStatus();
+      });
+
+      el.addEventListener('wf-expanded', () => {
+        console.log('[harness] Expanded');
+        updateStatus();
+      });
+
+      // el.addEventListener('wf-attachment-paste', async (e) => {
+      //   const files = e.detail?.files || [];
+      //   if (!files.length) return;
+      //   console.log('[harness] Paste detected', files.map(f => f.name));
+      //   const uploads = await Promise.all(files.map(uploadFileToNotebook));
+      //   pendingAttachments = pendingAttachments.concat(uploads);
+      // });
+
+      el.addEventListener('wf-conversation-starter-selected', (e) => {
+        if (!e.detail?.prompt) return;
+        console.log('[harness] Conversation starter selected:', e.detail.prompt);
+      });
+
+      // Handle auth errors from the component (e.g., invalid/expired token)
+      el.addEventListener('wf-auth-error', async (e) => {
+        console.warn('[harness] Auth error from component:', e.detail);
+        const newToken = await authService.refreshToken();
+        el.setAuthToken(newToken);
+      });
+
+      init();
+    </script>
+  </body>
+  </html>
+
+

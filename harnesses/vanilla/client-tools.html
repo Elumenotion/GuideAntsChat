@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Client Tools Harness - guideants-chat</title>
+    <style>
+      html, body { height: 100%; }
+      body { font-family: ui-sans-serif, system-ui; margin: 0; padding: 24px; background: #f9fafb; }
+      .container { max-width: 900px; margin: 0 auto; height: calc(100vh - 48px); }
+      .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; min-height: 100%; }
+      h1 { margin: 0 0 12px; font-size: 28px; font-weight: 700; }
+      .desc { margin: 0 0 16px; color: #374151; }
+      #log { margin-top: 16px; background: #0b1021; color: #d1e7ff; border-radius: 8px; padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; height: 180px; overflow: auto; }
+      .row { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+      .row label { font-weight: 600; }
+      .row input { padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; min-width: 260px; }
+      .muted { color: #6b7280; font-size: 14px; }
+      guideants-chat { display: block; border: 1px solid #e5e7eb; border-radius: 8px; flex: 1 1 auto; min-height: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Client Tools Harness</h1>
+        <p class="desc">
+          This harness demonstrates client-handled tool calls. Ask the guide to change the background color
+          (e.g., "Set the page color to red") and it will call the SetColor tool. The harness applies the color
+          and returns the result to the component; the component resumes the conversation on its own.
+        </p>
+        <div class="row">
+          <label>API Base</label>
+          <input id="apiBase" value="http://localhost:5106" />
+          <span class="muted">WaterfallApi base URL</span>
+        </div>
+        <div class="row">
+          <label>Published ID</label>
+          <input id="pubId" value="d4a1d138-e283-4cfc-9418-f389375143b9" />
+          <span class="muted">Published guide ID</span>
+        </div>
+        <div class="row">
+          <label>Command Mode</label>
+          <input id="cmdMode" type="checkbox" />
+          <span class="muted">Each message starts a new thread; no undo/reset</span>
+        </div>
+        <guideants-chat
+          id="chat"
+          class="theme-default"
+          display-mode="last-turn"
+          enable-turn-navigation
+          api-base-url="http://localhost:5106"
+          pub-id="d4a1d138-e283-4cfc-9418-f389375143b9"></guideants-chat>
+        <pre id="log"></pre>
+      </div>
+    </div>
+
+    <script src="../../client/dist/guideants-chat.iife.js"></script>
+    <script>
+      const chatEl = document.getElementById('chat');
+      const apiBaseEl = document.getElementById('apiBase');
+      const pubIdEl = document.getElementById('pubId');
+      const cmdModeEl = document.getElementById('cmdMode');
+      const logEl = document.getElementById('log');
+
+      function log(...args) {
+        const line = args.map(a => {
+          try { return typeof a === 'string' ? a : JSON.stringify(a); } catch { return String(a); }
+        }).join(' ');
+        logEl.textContent += line + '\n';
+        logEl.scrollTop = logEl.scrollHeight;
+      }
+
+      async function init() {
+        const base = apiBaseEl.value.trim() || '/api';
+        const pubId = pubIdEl.value.trim();
+        const commandMode = !!cmdModeEl?.checked;
+        chatEl.setApiBaseUrl(base);
+        chatEl.setPubId(pubId);
+        chatEl.setCollapsible(true);
+        // Initialize Command Mode from the toggle
+        chatEl.setCommandMode(commandMode);
+        // No navigation in Command Mode
+        chatEl.setTurnNavigationEnabled(!commandMode);
+        // Optional: if your published guide requires auth, set a token here
+        // chatEl.setAuthToken('demo-valid-token');
+
+        // Register context provider to inject local time
+        if (typeof chatEl.setContextProvider === 'function') {
+          chatEl.setContextProvider(() => {
+            const now = new Date();
+            const localTime = now.toLocaleString(undefined, {
+              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              dateStyle: 'full',
+              timeStyle: 'long'
+            });
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const utcTime = now.toISOString();
+            
+            return `Local Time: ${localTime}\nTimezone: ${timezone}\nUTC Time: ${utcTime}`;
+          });
+          log('[init] context provider registered (local time)');
+        }
+
+        try {
+          await chatEl.testAuthentication();
+          log('[init] component ready');
+        } catch (err) {
+          log('[init] auth check:', err?.message || String(err));
+        }
+      }
+
+      // Register the SetColor tool handler
+      chatEl.registerTool('SetColor', async (call) => {
+        let color = 'white';
+        try {
+          const args = typeof call.function.arguments === 'string' 
+            ? JSON.parse(call.function.arguments || '{}') 
+            : (call.function.arguments || {});
+          color = String(args.color || '').trim() || color;
+        } catch (err) {
+          log('[SetColor] Parse error:', err);
+        }
+        
+        if (!color) return null;
+        
+        document.body.style.backgroundColor = color;
+        log('[SetColor] Applied color:', color);
+        
+        return {
+          toolCallId: call.id,
+          name: 'SetColor',
+          content: JSON.stringify({ status: 'ok', appliedColor: color })
+        };
+      });
+
+      // Optional: Monitor stream events for debugging
+      chatEl.setStreamEventCallback((event) => {
+        if (event.type === 'external_tool_call') {
+          const toolCalls = event.data?.toolCalls || [];
+          log('[external_tool_call event]', toolCalls);
+        }
+      });
+
+      // Optional: mirror component stream events into the harness log for debugging
+      ['token','assistant_message','message','tool_result','usage','complete','error'].forEach(function(evtName) {
+        chatEl.addEventListener('wf-' + evtName, function(e) {
+          try {
+            var detail = e && e.detail !== undefined ? e.detail : undefined;
+            log('[stream:' + evtName + ']', detail);
+          } catch {
+            log('[stream:' + evtName + ']');
+          }
+        });
+      });
+
+      // Toggle Command Mode at runtime
+      cmdModeEl.addEventListener('change', () => {
+        const enabled = cmdModeEl.checked;
+        chatEl.setCommandMode(enabled);
+        chatEl.setTurnNavigationEnabled(!enabled);
+        log('[mode]', enabled ? 'command' : 'continuous');
+      });
+
+      init();
+    </script>
+  </body>
+  </html>
+
+
