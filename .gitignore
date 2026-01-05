@@ -1,0 +1,14 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/client/dist
+/client/node_modules
+/client/**.tgz
+/harnesses/angular/.angular/cache/17.3.17
+/harnesses/angular/node_modules
+/harnesses/dotnet-proxy/bin/Debug/net8.0
+/harnesses/dotnet-proxy/obj
+/server/Guideants.Proxy/bin/Debug
+/server/Guideants.Proxy/obj
