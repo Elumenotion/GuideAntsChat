@@ -112,6 +112,6 @@ chat.setPubId('your-published-guide-id');
 
 ## License
 
-MIT
+Apache 2.0
 
 

@@ -46,6 +46,19 @@ export interface AuthError {
   requiresAuth: boolean;
 }
 
+type PublishedGuideCostLimitError = {
+  error: 'published_guide_cost_limit_exceeded';
+  reason?: 'daily_limit_exceeded' | 'billing_period_limit_exceeded' | string;
+  dailyLimitUsd?: number | null;
+  dailyChargeUsd?: number | null;
+  dailyWindowStartUtc?: string;
+  dailyWindowEndUtc?: string;
+  billingPeriodLimitUsd?: number | null;
+  billingPeriodChargeUsd?: number | null;
+  billingPeriodStartUtc?: string | null;
+  billingPeriodEndUtc?: string | null;
+};
+
 export class AuthenticationError extends Error {
   constructor(
     public readonly errorCode: AuthError['error'],
@@ -68,10 +81,63 @@ function isAuthError(data: any): data is AuthError {
      data.error === 'auth_service_error');
 }
 
+function isPublishedGuideCostLimitError(data: any): data is PublishedGuideCostLimitError {
+  return data && typeof data === 'object' && data.error === 'published_guide_cost_limit_exceeded';
+}
+
+function formatUsd(value: number | null | undefined): string | null {
+  if (value === null || value === undefined || Number.isNaN(value)) return null;
+  // Keep it simple + consistent (server stores 4 decimals; UI should show cents)
+  return `$${value.toFixed(2)}`;
+}
+
+function formatUtc(iso: string | null | undefined): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toUTCString();
+}
+
+function buildCostLimitMessage(e: PublishedGuideCostLimitError): string {
+  const lines: string[] = [];
+  lines.push('This guide is temporarily unavailable because it reached its cost limit.');
+
+  const dailyLimit = formatUsd(e.dailyLimitUsd ?? null);
+  const dailySpend = formatUsd(e.dailyChargeUsd ?? null);
+  if (dailyLimit) {
+    const reset = formatUtc(e.dailyWindowEndUtc) ?? 'the next UTC day';
+    lines.push(`Daily spend: ${dailySpend ?? '$0.00'} / ${dailyLimit} (resets ${reset}).`);
+  }
+
+  const periodLimit = formatUsd(e.billingPeriodLimitUsd ?? null);
+  const periodSpend = formatUsd(e.billingPeriodChargeUsd ?? null);
+  if (periodLimit) {
+    const reset = formatUtc(e.billingPeriodEndUtc ?? null) ?? 'the next billing period';
+    lines.push(`Billing period spend: ${periodSpend ?? '$0.00'} / ${periodLimit} (resets ${reset}).`);
+  }
+
+  return lines.join(' ');
+}
+
 async function handleAuthError(res: Response): Promise<void> {
+  // Published guide cost-limit errors are returned as structured 403 JSON.
+  if (res.status === 403) {
+    try {
+      const json = await res.clone().json();
+      if (isPublishedGuideCostLimitError(json)) {
+        throw new Error(buildCostLimitMessage(json));
+      }
+    } catch (err) {
+      // If this was a structured cost limit error, rethrow. Otherwise ignore parse issues.
+      if (err instanceof Error && err.message.startsWith('This guide is temporarily unavailable because it reached its cost limit.')) {
+        throw err;
+      }
+    }
+  }
+
   if (res.status === 401 || res.status === 503) {
     try {
-      const json = await res.json();
+      const json = await res.clone().json();
       if (isAuthError(json)) {
         throw new AuthenticationError(json.error, json.message, json.requiresAuth);
       }

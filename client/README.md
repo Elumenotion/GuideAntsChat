@@ -1414,7 +1414,7 @@ app.Run();
 
 ## License
 
-MIT
+Apache 2.0
 
 ## Support
 

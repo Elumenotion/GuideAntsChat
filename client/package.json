@@ -1,6 +1,6 @@
 {
   "name": "guideants",
-  "version": "0.6.9",
+  "version": "0.6.14",
   "type": "module",
   "description": "Framework-agnostic web component for a published guides chat UI with server-side proxy support",
   "main": "dist/guideants-chat.iife.js",
@@ -44,20 +44,28 @@
     "README.md"
   ],
   "author": "dougware",
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Elumenotion/GuideAntsChat.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Elumenotion/GuideAntsChat/issues"
+  },
+  "homepage": "https://github.com/Elumenotion/GuideAntsChat#readme",
   "dependencies": {
+    "mermaid": "^11.6.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
-    "rehype-slug": "^6.0.0",
-    "mermaid": "^11.6.0",
-    "remark": "^15.0.1",
-    "remark-gfm": "^4.0.1",
-    "remark-rehype": "^11.1.1",
     "rehype": "^13.0.1",
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",
-    "rehype-stringify": "^10.0.0"
+    "rehype-slug": "^6.0.0",
+    "rehype-stringify": "^10.0.0",
+    "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-rehype": "^11.1.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
@@ -69,7 +77,7 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
-    "vite-plugin-dts": "^3.7.0"
+    "vite-plugin-dts": "^4.5.4"
   },
   "peerDependencies": {
     "express": "^4.18.0 || ^5.0.0"
@@ -80,5 +88,3 @@
     }
   }
 }
-
-

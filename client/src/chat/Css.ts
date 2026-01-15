@@ -2,7 +2,7 @@ export const getChatStyles = () => `
       :host {
         display: block;
         position: relative;
-        
+
         /* CSS Custom Properties for Theming */
         --wf-primary-color: #3b82f6;
         --wf-primary-hover: #2563eb;

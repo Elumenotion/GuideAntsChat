@@ -1,7 +1,7 @@
 export const getChatTemplate = () => `
 			<!-- Conversation Starters Area (shown when empty and enabled) -->
 			<div id="wf-starters-area" class="hidden"></div>
-			
+
 			<!-- Input Area (always visible) -->
 			<div class="flex flex-col gap-2">
         <label id="wf-input-label" for="wf-input" class="text-sm font-medium text-gray-700">Message</label>

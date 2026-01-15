@@ -213,6 +213,8 @@ export class GuideantsChatController {
     if (this.state.isRecording) {
       await this.audioRecorder.stopRecording();
     } else {
+      // Clear any existing error when starting a new recording
+      this.setInlineError(null);
       await this.audioRecorder.startRecording();
     }
   }
@@ -274,6 +276,11 @@ export class GuideantsChatController {
     this.view.onRestart = () => this.onRestart();
     this.view.onCollapseToggle = () => this.toggleCollapse();
     
+    this.view.onInput = () => {
+      // Clear any error when user types manually
+      this.setInlineError(null);
+    };
+    
     this.view.onTurnNav = (action) => {
       if (action === 'first') this.goToTurn(1);
       else if (action === 'prev') this.goToPreviousTurn();
@@ -287,6 +294,8 @@ export class GuideantsChatController {
     this.view.onStarterSelected = (index) => {
       const starter = this.state.conversationStarters[index] ?? '';
       if (!starter || !this.view.inputEl) return;
+      // Clear any error when user selects a conversation starter
+      this.setInlineError(null);
       this.view.inputEl.value = starter;
       this.view.adjustTextareaHeight();
       this.view.inputEl.focus();
@@ -636,6 +645,8 @@ export class GuideantsChatController {
     }
     this.initializeAudioRecorderIfNeeded();
     if (this.audioRecorder && !this.state.isRecording) {
+      // Clear any existing error when starting a new recording
+      this.setInlineError(null);
       await this.audioRecorder.startRecording();
     }
   }

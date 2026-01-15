@@ -12,10 +12,10 @@
     <Description>ASP.NET Core middleware for proxying GuideAnts API calls with secure API key injection</Description>
     <Authors>Doug Ware</Authors>
     <Company>Elumenotion</Company>
-    <PackageProjectUrl>https://github.com/douglasware/AntRunner</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Elumenotion/GuideAntsChat</PackageProjectUrl>
     <PackageIcon>favicon-32x32.png</PackageIcon>
-    <RepositoryUrl>https://github.com/douglasware/AntRunner</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Elumenotion/GuideAntsChat</RepositoryUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>guideants;proxy;api;middleware;aspnetcore</PackageTags>
     <PackageReleaseNotes>Initial release - Server-side proxy middleware for secure API key management with SSE streaming support.</PackageReleaseNotes>
   </PropertyGroup>
